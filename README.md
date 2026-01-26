@@ -1,3 +1,27 @@
+# oidc sp client server
+
+### oidc 테스트를 위한 sp mock client
+
+
+root 경로에 .env.local 파일 설정이 필요함
+
+```
+OIDC_ISSUER=http://
+OIDC_CLIENT_ID=demo-client
+OIDC_CLIENT_SECRET=your_client_secret
+OIDC_REDIRECT_URI=http://localhost:3000/callback
+NEXT_PUBLIC_OIDC_ISSUER=http://
+SESSION_SECRET=dev-secret-key-at-least-32-characters-long
+
+```
+
+
+
+
+
+
+
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
