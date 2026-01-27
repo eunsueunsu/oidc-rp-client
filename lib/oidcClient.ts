@@ -31,6 +31,7 @@ export async function exchangeCodeForToken(params: {
     body.set("client_id", params.client_id);
     body.set("redirect_uri", params.redirect_uri);
     body.set("code", params.code);
+    // authorize 부터 pkce를 적용한 상태에서만 보내야함
     body.set("code_verifier", params.code_verifier);
     if (params.client_secret) body.set("client_secret", params.client_secret);
 
@@ -49,7 +50,7 @@ export async function exchangeCodeForToken(params: {
             cache: "no-store",
         });
 
-        console.log('[api call] idp /token '+ res )
+        console.log('[api call] idp /token ')
 
     } catch (e: any) {
         console.error("[TOKEN] fetch failed", e?.message || e);
