@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
   const data = ${JSON.stringify(result).replace(/</g, "\\u003c")};
   document.getElementById("data").textContent = JSON.stringify(data, null, 2);
   localStorage.setItem("oidc_last_result", JSON.stringify(data));
-  setTimeout(() => location.href = "/", 300);
+  setTimeout(() => location.href = "/", 3000);
 </script>
 </body></html>`;
 
