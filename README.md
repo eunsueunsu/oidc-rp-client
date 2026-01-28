@@ -2,8 +2,12 @@
 
 ### oidc 테스트를 위한 sp mock client
 
+- oidc idp와 테스트할 수 있는 sp client 입니다.
+- sp의 로그인 유지는 쿠키의 access token으로 임시구현 되어있습니다.
 
-root 경로에 .env.local 파일 설정이 필요함
+
+### SP 설정 방법
+root 경로에 .env.local 파일 설정을 추가합니다.
 
 ```
 OIDC_ISSUER=http://
@@ -15,10 +19,12 @@ SESSION_SECRET=dev-secret-key-at-least-32-characters-long
 
 ```
 
-
-
-
-
+1. issuer 를 oidc idp domain으로 설정한다.
+2. clinet id, client secret은 미리 oidc idp에서 등록, 발급받아 설정한다.
+3. session_secret은 수정하지 않아도됨.
+- npm run dev로 로컬에서 실행하여 테스트 할 수 있습니다. 
+- 프로젝트 실행 방법은 아래의 next readme 참조
+---
 
 
 
