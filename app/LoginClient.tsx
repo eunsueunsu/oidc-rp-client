@@ -9,9 +9,6 @@ export default function LoginClient({
     onLogout?: () => void;
 }) {
 
-
-
-
     return (<div>
             {isLoggedIn ? (
                 <div className="grid grid-cols-4 sm:grid-cols-4 gap-3">

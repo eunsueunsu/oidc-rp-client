@@ -20,5 +20,5 @@ export function createPkce() {
 }
 
 export function createStateNonce() {
-    return { state: randomString(16), nonce: randomString(16) };
+    return { state: randomString(32), nonce: randomString(32) };
 }

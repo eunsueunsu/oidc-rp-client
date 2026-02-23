@@ -2,6 +2,7 @@
 import {useEffect, useMemo, useState} from "react";
 import LoginClient from "@/app/LoginClient";
 import {discover} from "@/lib/oidcClient";
+import {fetchWithAuth} from "@/lib/fetchWithAuth";
 
 export default function Home({isLoggedIn}: { isLoggedIn: boolean }) {
 
@@ -17,11 +18,13 @@ export default function Home({isLoggedIn}: { isLoggedIn: boolean }) {
         return issuer.replace(/\/$/, "") + "/.well-known/openid-configuration";
     }, [issuer]);
 
+
+
     const jwksUrl = useMemo(() => {
         // discovery에서 jwks_uri를 읽는게 원칙이지만,
         // MVP에서는 issuer/jwks 패턴을 쓰는 경우가 많아서 둘 다 지원하도록 만들 수 있음.
         if (!issuer || issuer === "(not set)") return null;
-        return issuer.replace(/\/$/, "") + "/jwks";
+        return issuer.replace(/\/$/, "") + "/oidc/jwks";
     }, [issuer]);
 
     useEffect(() => {
@@ -38,22 +41,54 @@ export default function Home({isLoggedIn}: { isLoggedIn: boolean }) {
         setUserinfoErr(null);
 
         try {
-            const res = await fetch("/api/userinfo", {
-                credentials: "include",
-            });
+            const res = await fetchWithAuth("/api/userinfo");
+
+            if (res.ok) {
+                const data = await res.json();
+                console.log(data);
+                setUserinfo(data);
+            }
 
             if (!res.ok) {
                 const t = await res.text();
                 throw new Error(t);
             }
 
-            const json = await res.json();
-            setUserinfo(json);
         } catch (e: any) {
             setUserinfoErr("userinfo 호출 실패");
         }
     };
+    const handleForceRefresh = async () => {
+        try {
+            const res = await fetch("/api/refresh", {
+                method: "POST",
+                credentials: "include",
+            });
 
+            if (res.ok) {
+                console.log("refresh success");
+                return;
+            }
+
+            // 🔥 refresh 실패
+            if (res.status === 401) {
+                const data = await res.json();
+
+                if (data.redirect) {
+                    // OP authorize로 이동
+                    window.location.href = data.redirect;
+                    return;
+                }
+            }
+
+            console.error("unexpected refresh response");
+        } catch (err) {
+            console.error("refresh error:", err);
+
+            // 네트워크 에러 등도 안전하게 로그인 플로우로
+            window.location.href = "/api/login";
+        }
+    };
     const clearLatest = () => {
         localStorage.removeItem("oidc_last_result");
         setLatest(null);
@@ -66,12 +101,13 @@ export default function Home({isLoggedIn}: { isLoggedIn: boolean }) {
         });
 
         // 2️⃣ IdP 로그아웃으로 이동
-        const idTokenHint = latest?.id_token; // 디버그용이면 localStorage에서도 OK
+        console.log(latest)
+        const idTokenHint = latest?.tokenResponse?.id_token; // 디버그용이면 localStorage에서도 OK
         // const postLogoutRedirectUri = window.location.origin;
         const postLogoutRedirectUri = "http://localhost:3000";
 
         window.location.href =
-            `${issuer}/logout` +
+            `${issuer}/oidc/logout` +
             `?id_token_hint=${encodeURIComponent(idTokenHint)}` +
             `&post_logout_redirect_uri=${encodeURIComponent(postLogoutRedirectUri)}`;
 
@@ -118,7 +154,7 @@ export default function Home({isLoggedIn}: { isLoggedIn: boolean }) {
                     </a>
 
                     {/* Links */}
-                    <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <a
                             href={discoveryUrl || "#"}
                             target="_blank"
@@ -144,6 +180,12 @@ export default function Home({isLoggedIn}: { isLoggedIn: boolean }) {
                             className="inline-flex items-center justify-center rounded-xl border border-black/20 px-4 py-2 text-sm font-medium transition hover:border-black hover:bg-black hover:text-white"
                         >
                             Token 결과 보기
+                        </a>
+                        <a
+                            onClick={handleForceRefresh}
+                            className="inline-flex items-center justify-center rounded-xl border border-black/20 px-4 py-2 text-sm font-medium transition hover:border-black hover:bg-black hover:text-white"
+                        >
+                            강제 Refresh 테스트
                         </a>
                     </div>
 

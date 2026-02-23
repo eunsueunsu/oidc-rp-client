@@ -81,7 +81,7 @@ export async function verifyIdToken(params: {
     id_token: string;
     expected_nonce?: string;
 }) {
-    console.log(params)
+    console.log("verifyIdToken" + params)
     // jwks api 호출
     const JWKS = createRemoteJWKSet(new URL(params.jwks_uri));
     const { payload, protectedHeader } = await jwtVerify(params.id_token, JWKS, {
