@@ -110,12 +110,12 @@ export default function Home({isLoggedIn}: { isLoggedIn: boolean }) {
         window.location.href =
             `${issuer}/oidc/logout` +
             `?id_token_hint=${encodeURIComponent(idTokenHint)}` +
-            `&post_logout_redirect_uri=${encodeURIComponent(postLogoutRedirectUri)}`;
+            `&post_logout_redirect_uri=${encodeURIComponent(postLogoutRedirectUri!)}`;
 
 
         console.log('[api call] idp /logout ' + `${issuer}/logout` +
             `?id_token_hint=${encodeURIComponent(idTokenHint)}` +
-            `&post_logout_redirect_uri=${encodeURIComponent(postLogoutRedirectUri)}`)
+            `&post_logout_redirect_uri=${encodeURIComponent(postLogoutRedirectUri!)}`)
     };
 
     return (

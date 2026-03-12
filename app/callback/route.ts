@@ -1,9 +1,6 @@
 import {NextRequest, NextResponse} from "next/server";
 import { cookies } from "next/headers";
 import { discover, exchangeCodeForToken, verifyIdToken } from "../../lib/oidcClient";
-import {ReadonlyRequestCookies} from "next/dist/server/web/spec-extension/adapters/request-cookies";
-import {getSession} from "@/lib/session";
-import {jwtVerify} from "jose";
 export const usePkce =
     process.env.NEXT_PUBLIC_USE_PKCE === "true";
 export async function GET(req: NextRequest) {
@@ -56,8 +53,8 @@ export async function GET(req: NextRequest) {
             client_id: process.env.OIDC_CLIENT_ID!,
             client_secret: process.env.OIDC_CLIENT_SECRET,
             redirect_uri: process.env.OIDC_REDIRECT_URI!,
-            code,
-            code_verifier,
+            code:code,
+            code_verifier:code_verifier!,
         });
     } catch (e: any) {
         let parsed;
@@ -138,7 +135,7 @@ export async function GET(req: NextRequest) {
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
             path: "/",
-            maxAge:idTokenVerified.payload.exp -idTokenVerified.payload.iat- 30   // 한시간 -30 정도
+            maxAge:idTokenVerified.payload.exp! -idTokenVerified.payload.iat!- 30   // 한시간 -30 정도
         });
 
         // sp 테스트 구현용 access token 쿠키 적재

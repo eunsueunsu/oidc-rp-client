@@ -35,8 +35,8 @@ export async function GET() {
             code_challenge_method: undefined
         };
     if(usePkce){
-        auth.searchParams.set("code_challenge", code_challenge);
-        auth.searchParams.set("code_challenge_method", code_challenge_method);
+        auth.searchParams.set("code_challenge", code_challenge!);
+        auth.searchParams.set("code_challenge_method", code_challenge_method!);
     }
     const res = NextResponse.redirect(auth.toString());
 
@@ -48,12 +48,12 @@ export async function GET() {
     // 브라우저 쿠키에 고정시킨다
     // 현재 로그인 시도에 유지시키기 위해 쿠키에 약식으로 붙여놓음.  sp에서는 아래의 값을 따로 적재하고 관리해야함
     // res.cookies.set("pkce_verifier", code_verifier, { httpOnly: true, sameSite: "lax", path: "/" });
-    res.cookies.set("oidc_state", state, { httpOnly: true, sameSite: "lax", path: "/" });
-    res.cookies.set("oidc_nonce", nonce, { httpOnly: true, sameSite: "lax", path: "/" });
-    res.cookies.set("oidc_issuer", issuer, { httpOnly: true, sameSite: "lax", path: "/" });
+    res.cookies.set("oidc_state", state!, { httpOnly: true, sameSite: "lax", path: "/" });
+    res.cookies.set("oidc_nonce", nonce!, { httpOnly: true, sameSite: "lax", path: "/" });
+    res.cookies.set("oidc_issuer", issuer!, { httpOnly: true, sameSite: "lax", path: "/" });
 
     if(usePkce){
-        res.cookies.set("pkce_verifier", code_verifier, { httpOnly: true, sameSite: "lax", path: "/" });
+        res.cookies.set("pkce_verifier", code_verifier!, { httpOnly: true, sameSite: "lax", path: "/" });
 
     }
 

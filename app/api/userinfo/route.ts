@@ -28,7 +28,7 @@ export async function GET() {
 
     const res = await fetch(d.userinfo_endpoint, {
         headers: {
-            Authorization: `Bearer ${accessToken.value}`,
+            Authorization: `Bearer ${accessToken?.value}`,
         },
         cache: "no-store",
     });

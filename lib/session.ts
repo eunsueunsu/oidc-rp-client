@@ -21,7 +21,7 @@ export const sessionOptions: IronSessionOptions = {
     },
 };
 
-export async function getSession() {
-    // ✅ App Router에서 정상 동작하는 형태
-    return getIronSession<SessionData>(cookies(), sessionOptions);
-}
+// export async function getSession() {
+//     // ✅ App Router에서 정상 동작하는 형태
+//     return getIronSession<SessionData>(cookies(), sessionOptions);
+// }
