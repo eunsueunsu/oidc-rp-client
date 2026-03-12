@@ -4,7 +4,8 @@ import { discover, exchangeCodeForToken, verifyIdToken } from "../../lib/oidcCli
 import {ReadonlyRequestCookies} from "next/dist/server/web/spec-extension/adapters/request-cookies";
 import {getSession} from "@/lib/session";
 import {jwtVerify} from "jose";
-
+export const usePkce =
+    process.env.NEXT_PUBLIC_USE_PKCE === "true";
 export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const code = url.searchParams.get("code");
@@ -14,7 +15,7 @@ export async function GET(req: NextRequest) {
 
     console.log('[sp] call back 호출 시점. url : '+ url)
 
-    if (error) return NextResponse.json({ error, error_description }, { status: 400 });
+    if (error) return NextResponse.json({ error }, { status: 400 });
     if (!code || !state) return NextResponse.json({ error: "missing code/state" }, { status: 400 });
 
 
@@ -22,13 +23,20 @@ export async function GET(req: NextRequest) {
     const expectedState = req.cookies.get('oidc_state')?.value;
     const nonce = req.cookies.get("oidc_nonce")?.value;
     const code_verifier = req.cookies.get("pkce_verifier")?.value;
+    // const code_verifier = "pineapple" // pkce test
     const issuer = req.cookies.get("oidc_issuer")?.value || process.env.OIDC_ISSUER!;
 
     if (!expectedState || state !== expectedState) {
+        console.log(expectedState);
+        console.log(state)
         return NextResponse.json({ error: "state mismatch", expectedState, got: state }, { status: 400 });
     }
-    if (!code_verifier) {
-        return NextResponse.json({ error: "missing pkce_verifier(cookie)" }, { status: 400 });
+    // ✅ PKCE 사용할 때만 verifier 체크
+    if (usePkce && !code_verifier) {
+        return NextResponse.json(
+            { error: "missing pkce_verifier(cookie)" },
+            { status: 400 }
+        );
     }
 
     const d = await discover(issuer);
@@ -39,20 +47,48 @@ export async function GET(req: NextRequest) {
     console.log('[CALLBACK] client_id=', process.env.OIDC_CLIENT_ID);
     console.log('[CALLBACK] code_verifier=', code_verifier);
     console.log('[CALLBACK] token_endpoint=', d.token_endpoint);
-    const token = await exchangeCodeForToken({
-        token_endpoint: d.token_endpoint,
-        client_id: process.env.OIDC_CLIENT_ID!,
-        client_secret: process.env.OIDC_CLIENT_SECRET,
-        redirect_uri: process.env.OIDC_REDIRECT_URI!,
-        code,
-        code_verifier,
-    });
+
+    let token
+    try{
+        token = await exchangeCodeForToken({
+
+            token_endpoint: d.token_endpoint,
+            client_id: process.env.OIDC_CLIENT_ID!,
+            client_secret: process.env.OIDC_CLIENT_SECRET,
+            redirect_uri: process.env.OIDC_REDIRECT_URI!,
+            code,
+            code_verifier,
+        });
+    } catch (e: any) {
+        let parsed;
+        try {
+            parsed = JSON.parse(e.message);
+        } catch {
+            parsed = { error: "server_error", error_description: e.message };
+        }
+
+        const errorHtml = `<!doctype html>
+<html>
+<head><meta charset="utf-8"/></head>
+<body style="font-family: ui-sans-serif; padding:24px">
+<h1>OIDC Error</h1>
+<p><strong>Error:</strong> ${parsed.error}</p>
+<p><strong>Description:</strong> ${parsed.error_description}</p>
+<a href="/">Go Home</a>
+</body></html>`;
+
+        return new NextResponse(errorHtml, {
+            status: 400,
+            headers: { "Content-Type": "text/html; charset=utf-8" },
+        });
+    }
 
     const idTokenVerified = token.id_token
         ? await verifyIdToken({
             issuer: d.issuer,
             jwks_uri: d.jwks_uri,
             client_id: process.env.OIDC_CLIENT_ID!,
+            // id_token: token.id_token,
             id_token: token.id_token,
             expected_nonce: nonce,
         })
@@ -66,6 +102,9 @@ export async function GET(req: NextRequest) {
             : null,
         discovery: d,
     };
+
+
+
 
     // ✅ 결과 저장 + 홈으로 이동 HTML
     const html = `<!doctype html>
@@ -83,8 +122,6 @@ export async function GET(req: NextRequest) {
   setTimeout(() => location.href = "/", 3000);
 </script>
 </body></html>`;
-
-
     const res = new NextResponse(html, {
         headers: { "Content-Type": "text/html; charset=utf-8" },
     });
@@ -116,7 +153,11 @@ export async function GET(req: NextRequest) {
     // ✅ delete도 res.cookies로 (NextResponse cookies는 sync)
     res.cookies.delete("oidc_state");
     res.cookies.delete("oidc_nonce");
-    res.cookies.delete("pkce_verifier");
 
+
+// PKCE 사용 시에만 삭제
+    if (usePkce) {
+        res.cookies.delete("pkce_verifier");
+    }
     return res;
 }

@@ -14,6 +14,7 @@ export function randomString(bytes = 32) {
 
 export function createPkce() {
     const code_verifier = randomString(32);
+    // const code_verifier = "apple"    // pkce 검증하기
     const hash = crypto.createHash("sha256").update(code_verifier).digest();
     const code_challenge = base64url(hash);
     return { code_verifier, code_challenge, code_challenge_method: "S256" as const };

@@ -9,12 +9,12 @@ export async function GET() {
     const spLogin = cookieStore.get("sp_login");
     const accessToken = cookieStore.get("access_token");
 
-    if (!spLogin || !accessToken) {
-        return NextResponse.json(
-            { error: "not_authenticated" },
-            { status: 401 }
-        );
-    }
+    // if (!spLogin || !accessToken) {
+    //     return NextResponse.json(
+    //         { error: "not_authenticated" },
+    //         { status: 401 }
+    //     );
+    // }
 
     const issuer = process.env.OIDC_ISSUER!;
     const d = await discover(issuer);

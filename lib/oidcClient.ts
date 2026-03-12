@@ -1,4 +1,6 @@
 import { jwtVerify, createRemoteJWKSet } from "jose";
+import {usePkce} from "@/app/callback/route";
+import js from "@eslint/js";
 
 type Discovery = {
     issuer: string;
@@ -32,7 +34,10 @@ export async function exchangeCodeForToken(params: {
     body.set("redirect_uri", params.redirect_uri);
     body.set("code", params.code);
     // authorize 부터 pkce를 적용한 상태에서만 보내야함
+    if(usePkce){
     body.set("code_verifier", params.code_verifier);
+    }
+
     if (params.client_secret) body.set("client_secret", params.client_secret);
 
     // ✅ 디버깅 출력
@@ -64,10 +69,27 @@ export async function exchangeCodeForToken(params: {
     let json: any;
     try { json = JSON.parse(text); } catch { json = { raw: text }; }
 
+    // if (!res.ok) {
+    //     console.log(res)
+    //     // ✅ 여기서 에러를 상세히 던지기
+    //     // throw new Error(`Token exchange failed: ${res.status} ${JSON.stringify(json)}`);
+    // }
+
     if (!res.ok) {
-        // ✅ 여기서 에러를 상세히 던지기
-        throw new Error(`Token exchange failed: ${res.status} ${JSON.stringify(json)}`);
+        // 🔥 OAuth2 에러 형식 유지해서 throw
+        const error = json?.error || "server_error";
+        const description =
+            json?.error_description || "Token exchange failed";
+
+        throw new Error(
+            JSON.stringify({
+                error,
+                error_description: description,
+                status: res.status,
+            })
+        );
     }
+
     console.log('[api call] idp /token '+ json )
 
     return json;
@@ -131,6 +153,7 @@ export async function refreshAccessToken(params: {
     try { json = JSON.parse(text); } catch { json = { raw: text }; }
 
     if (!res.ok) {
+        console.log(json , res.status)
         throw new Error(`refresh failed: ${res.status} ${JSON.stringify(json)}`);
     }
 

@@ -14,6 +14,7 @@ export async function POST() {
     const cookieStore = await cookies();
 
     const refreshToken = cookieStore.get("refresh_token");
+    // Refresh token replay test
     const spLogin = cookieStore.get("sp_login");
 
     if ( !refreshToken?.value) {
@@ -25,9 +26,10 @@ export async function POST() {
     }
 
     try {
-        const issuer = process.env.OIDC_ISSUER!;
-        const clientId = process.env.OIDC_CLIENT_ID!;
-        const clientSecret = process.env.OIDC_CLIENT_SECRET;
+
+            const issuer = process.env.OIDC_ISSUER!;
+            const clientId = process.env.OIDC_CLIENT_ID!;
+            const clientSecret = process.env.OIDC_CLIENT_SECRET;
 
         const d = await discover(issuer);
 
@@ -43,10 +45,11 @@ export async function POST() {
             client_id: clientId,
             client_secret: clientSecret,
             refresh_token: refreshToken.value,
+            // refresh_token : "t4tVHNI7yKs6FjuK4Eeqzl3rUVa6FZs5zA4rpthNG2Y"
 
         });
 
-        // 🔐 access_token decode
+        // 🔐 access_token
         // const accessPayload = decodeJwt(refreshed.access_token);
         // 🔐 쿠키 갱신
         cookieStore.set("access_token", refreshed.access_token, {

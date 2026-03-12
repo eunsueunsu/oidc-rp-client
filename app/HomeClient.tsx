@@ -80,7 +80,7 @@ export default function Home({isLoggedIn}: { isLoggedIn: boolean }) {
                     return;
                 }
             }
-
+            console.log(res.status)
             console.error("unexpected refresh response");
         } catch (err) {
             console.error("refresh error:", err);
@@ -104,8 +104,9 @@ export default function Home({isLoggedIn}: { isLoggedIn: boolean }) {
         console.log(latest)
         const idTokenHint = latest?.tokenResponse?.id_token; // 디버그용이면 localStorage에서도 OK
         // const postLogoutRedirectUri = window.location.origin;
-        const postLogoutRedirectUri = "http://localhost:3000";
-
+        // const postLogoutRedirectUri = "http://localhost:3000";
+        const postLogoutRedirectUri = process.env.CLIENT_ORIGIN;
+        console.log('logout uri: ' + postLogoutRedirectUri)
         window.location.href =
             `${issuer}/oidc/logout` +
             `?id_token_hint=${encodeURIComponent(idTokenHint)}` +
@@ -194,7 +195,7 @@ export default function Home({isLoggedIn}: { isLoggedIn: boolean }) {
                         <div className="text-xs font-semibold text-black/60">Current Issuer</div>
                         <div className="mt-1 text-sm font-mono break-all">{issuer}</div>
                         <div className="mt-2 text-xs text-black/50">
-                            issuer는 <span className="font-mono">NEXT_PUBLIC_OIDC_ISSUER</span> 환경변수에서 읽어요.
+                            issuer는 <span className="font-mono">OIDC_ISSUER</span> 환경변수에서 읽어요.
                         </div>
                     </div>
                 </div>
