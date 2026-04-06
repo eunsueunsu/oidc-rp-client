@@ -1,4 +1,4 @@
-# oidc sp client server
+# OIDC Test Client (RP)
 
 ### oidc 테스트를 위한 sp mock client
 
