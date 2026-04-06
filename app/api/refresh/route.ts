@@ -55,7 +55,7 @@ export async function POST() {
         cookieStore.set("access_token", refreshed.access_token, {
             httpOnly: true,
             sameSite: "lax",
-            secure: true,
+            secure: false,
             path: "/",
         });
 
@@ -63,7 +63,7 @@ export async function POST() {
             cookieStore.set("refresh_token", refreshed.refresh_token, {
                 httpOnly: true,
                 sameSite: "lax",
-                secure: true,
+                secure: false,
                 path: "/",
             });
         }

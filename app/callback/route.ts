@@ -132,7 +132,7 @@ export async function GET(req: NextRequest) {
             name: idTokenVerified.payload.name,
         }), {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
+            secure: false,
             sameSite: "lax",
             path: "/",
             maxAge:idTokenVerified.payload.exp! -idTokenVerified.payload.iat!- 30   // 한시간 -30 정도

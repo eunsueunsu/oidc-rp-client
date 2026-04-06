@@ -105,13 +105,12 @@ export default function Home({isLoggedIn}: { isLoggedIn: boolean }) {
         const idTokenHint = latest?.tokenResponse?.id_token; // 디버그용이면 localStorage에서도 OK
         // const postLogoutRedirectUri = window.location.origin;
         // const postLogoutRedirectUri = "http://localhost:3000";
-        const postLogoutRedirectUri = process.env.CLIENT_ORIGIN;
+        const postLogoutRedirectUri = process.env.NEXT_PUBLIC_CLIENT_ORIGIN;
         console.log('logout uri: ' + postLogoutRedirectUri)
         window.location.href =
             `${issuer}/oidc/logout` +
             `?id_token_hint=${encodeURIComponent(idTokenHint)}` +
             `&post_logout_redirect_uri=${encodeURIComponent(postLogoutRedirectUri!)}`;
-
 
         console.log('[api call] idp /logout ' + `${issuer}/logout` +
             `?id_token_hint=${encodeURIComponent(idTokenHint)}` +
@@ -144,7 +143,7 @@ export default function Home({isLoggedIn}: { isLoggedIn: boolean }) {
                     </div>
 
                     <a
-                        href="/login"
+                        href="/api/login"
                         className="group w-full inline-flex items-center justify-center rounded-xl border border-black bg-black px-5 py-3 text-base font-semibold text-white transition-all duration-200 hover:bg-white hover:text-black hover:shadow-[0_10px_30px_rgba(0,0,0,0.12)] focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
                     >
                         로그인
